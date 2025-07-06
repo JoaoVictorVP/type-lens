@@ -2,7 +2,7 @@
   "name": "type-lens",
   "displayName": "universal-type-lens",
   "description": "Turns inlay hints of extensions with support to them into line-lens (F# ionide style).",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "author": {
     "name": "jv.n"
   },
@@ -23,57 +23,76 @@
   "contributes": {
     "commands": [
       { "command": "typeLens.refresh", "title": "Type Lens: Refresh" }
-    ]
-  },
-  "configuration": {
-    "properties": {
-      "typeLens.separator": {
-        "type": "string",
-        "default": ", ",
-        "description": "Separator used when a line has multiple hints."
+    ],
+    "configuration": [
+      {
+        "title": "Display",
+        "properties": {
+          "typeLens.placement": {
+            "type": "string",
+            "enum": ["eol", "above"],
+            "default": "eol",
+            "description": "Where to render hints: end-of-line (eol) or as CodeLens above the line."
+          }
+        }
       },
-      "typeLens.prefix": {
-        "type": "string",
-        "default": "// ",
-        "description": "Text prepended to each hint."
+      {
+        "title": "Formatting",
+        "properties": {
+          "typeLens.separator": {
+            "type": "string",
+            "default": ", ",
+            "description": "Separator used when a line has multiple hints."
+          },
+          "typeLens.prefix": {
+            "type": "string",
+            "default": "// ",
+            "description": "Text prepended to each hint."
+          },
+          "typeLens.hintFormat": {
+            "type": "string",
+            "default": "({word} {hint})",
+            "description": "Text prepended to each individual hint exhibited. Use `{word}` to insert the word at the hint position. Use `{hint}` to insert the hint itself.",
+            "examples": [
+              "{word} {hint}",
+              "{word} ({hint})",
+              "{word} - {hint}",
+              "{word}: {hint}"
+            ]
+          }
+        }
       },
-      "typeLens.hintFormat": {
-        "type": "string",
-        "default": "({word} {hint})",
-        "description": "Text prepended to each individual hint exhibited. Use `{word}` to insert the word at the hint position. Use `{hint}` to insert the hint itself."
-      },
-      "typeLens.placement": {
-        "type": "string",
-        "enum": ["eol", "above"],
-        "default": "eol",
-        "description": "Where to render hints: end-of-line (eol) or as CodeLens above the line."
-      },
-      "typeLens.eolMargin": {
-        "type": "string",
-        "default": "0 0 0 0.25rem",
-        "description": "CSS margin for end-of-line hints."
-      },
-      "typeLens.eolFontStyle": {
-        "type": "string",
-        "default": "normal",
-        "description": "CSS font style for end-of-line hints."
-      },
-      "typeLens.eolFontWeight": {
-        "type": "string",
-        "default": "normal",
-        "description": "CSS font weight for end-of-line hints."
-      },
-      "typeLens.eolBorder": {
-        "type": "string",
-        "default": "none",
-        "description": "CSS border for end-of-line hints."
-      },
-      "typeLens.eolBackgroundColor": {
-        "type": "string",
-        "default": "none",
-        "description": "CSS background color for end-of-line hints. If none, will have no background color."
+      {
+        "title": "EOL Hints",
+        "properties": {
+          "typeLens.eolMargin": {
+            "type": "string",
+            "default": "0 0 0 0.25rem",
+            "description": "CSS margin for end-of-line hints."
+          },
+          "typeLens.eolFontStyle": {
+            "type": "string",
+            "default": "normal",
+            "description": "CSS font style for end-of-line hints."
+          },
+          "typeLens.eolFontWeight": {
+            "type": "string",
+            "default": "normal",
+            "description": "CSS font weight for end-of-line hints."
+          },
+          "typeLens.eolBorder": {
+            "type": "string",
+            "default": "none",
+            "description": "CSS border for end-of-line hints."
+          },
+          "typeLens.eolBackgroundColor": {
+            "type": "string",
+            "default": "none",
+            "description": "CSS background color for end-of-line hints. If none, will have no background color."
+          }
+        }
       }
-    }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "yarn run package",

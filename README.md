@@ -58,6 +58,9 @@ It could not work if the extension you are using for your programming language d
 
 ## Release Notes
 
+### 0.0.3
+Fixed a problem in the configs where they did not appear in settings.
+
 ### 0.0.1
 
 First release thing.

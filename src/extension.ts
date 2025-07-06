@@ -1,9 +1,11 @@
 import * as vscode from 'vscode';
 
+const configsNamed = "typeLens";
+
 const ABOVE_CMD = 'typeLens.above';
-const cfg = () => vscode.workspace.getConfiguration('typeLens');
+const cfg = () => vscode.workspace.getConfiguration(configsNamed);
 const prefix = () => cfg().get<string>('prefix', '// ');
-const hintFormat = () => cfg().get<string>('hintFormat', '{word}: {hint}');
+const hintFormat = () => cfg().get<string>('hintFormat', '({word} {hint})');
 const sep = () => cfg().get<string>('separator', ', ');
 const placement = () => cfg().get<'eol' | 'above'>('placement', 'eol');
 const eolMargin = () => cfg().get<string>('eolMargin', '0 0 0 0.25rem');
@@ -216,7 +218,7 @@ export function activate(ctx: vscode.ExtensionContext) {
     );
 
 	vscode.workspace.onDidChangeConfiguration(e => {
-		if (e.affectsConfiguration('typeLens')) {
+		if (e.affectsConfiguration(configsNamed)) {
 			buildEolDecoration();
 			refresh();
 		}
