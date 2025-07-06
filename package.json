@@ -6,6 +6,9 @@
   "author": {
     "name": "jv.n"
   },
+  "repository": {
+    "url": "https://github.com/JoaoVictorVP/type-lens"
+  },
   "engines": {
     "vscode": "^1.101.0"
   },
