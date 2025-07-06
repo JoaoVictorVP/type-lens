@@ -1,6 +1,6 @@
 {
   "name": "type-lens",
-  "displayName": "type-lens",
+  "displayName": "universal-type-lens",
   "description": "Turns inlay hints of extensions with support to them into line-lens (F# ionide style).",
   "version": "0.0.1",
   "author": {
