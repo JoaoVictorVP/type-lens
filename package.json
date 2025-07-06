@@ -2,7 +2,7 @@
   "name": "type-lens",
   "displayName": "universal-type-lens",
   "description": "Turns inlay hints of extensions with support to them into line-lens (F# ionide style).",
-  "version": "0.0.3",
+  "version": "0.0.5",
   "author": {
     "name": "jv.n"
   },
@@ -10,6 +10,7 @@
   "repository": {
     "url": "https://github.com/JoaoVictorVP/type-lens"
   },
+  "icon": "resources/icon.png",
   "engines": {
     "vscode": "^1.101.0"
   },
