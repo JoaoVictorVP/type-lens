@@ -7,7 +7,8 @@ const cfg = () => vscode.workspace.getConfiguration(configsNamed);
 const prefix = () => cfg().get<string>('prefix', '// ');
 const hintFormat = () => cfg().get<string>('hintFormat', '({word} {hint})');
 const sep = () => cfg().get<string>('separator', ', ');
-const placement = () => cfg().get<'eol' | 'above'>('placement', 'eol');
+const placement = () => cfg().get<'eol' | 'above' | 'auto'>('placement', 'eol');
+const autoLimitForAbove = () => cfg().get<number>('autoLimitForAbove', 50);
 const eolMargin = () => cfg().get<string>('eolMargin', '0 0 0 0.25rem');
 const eolFontStyle = () => cfg().get<string>('eolFontStyle', 'normal');
 const eolFontWeight = () => cfg().get<string>('eolFontWeight', 'normal');
@@ -55,9 +56,11 @@ function processInlayHints(hints: vscode.InlayHint[], doc: vscode.TextDocument) 
 
 		const entry = map.get(h.position.line);
 		const processedHint = processHintStr(txt);
+		const word = wordInfo(h.position, doc);
 		const finalHint = hintFormat()
-			.replace('{word}', wordInfo(h.position, doc))
+			.replace('{word}', word)
 			.replace('{hint}', processedHint);
+		
 		if (entry) {
 			entry.push({ label: finalHint, hint: h });
 		} else {
@@ -65,6 +68,16 @@ function processInlayHints(hints: vscode.InlayHint[], doc: vscode.TextDocument) 
 		}
 	}
 	return map;
+}
+
+function eitherWord(...words: (() => string)[]) {
+	for(const w of words) {
+		const word = w();
+		if(word.trim().length > 0) {
+			return word;
+		}
+	}
+	return '';
 }
 
 function wordInfo(pos: vscode.Position, doc: vscode.TextDocument) {
@@ -87,7 +100,7 @@ class TypeLensCodeLensProvider implements vscode.CodeLensProvider {
 	}
 
     async provideCodeLenses(doc: vscode.TextDocument): Promise<vscode.CodeLens[]> {
-        const full = new vscode.Range(0, 0, doc.lineCount, 0);
+        const full = new vscode.Range(0, 0, doc.lineCount - 1, 0);
         const hints = await vscode.commands.executeCommand<vscode.InlayHint[]>(
             'vscode.executeInlayHintProvider', doc.uri, full
         );
@@ -98,6 +111,15 @@ class TypeLensCodeLensProvider implements vscode.CodeLensProvider {
         for (const [line, pieces] of map) {
 			if (pieces.length === 0) { continue; } // skip empty lines
 			let first = true;
+
+			let len = 0;
+			for(const { label } of pieces) {
+				len += label.length + prefix().length + sep().length;
+			}
+			if(placement() === 'auto' && len <= autoLimitForAbove()) {
+				continue;
+			}
+
 			for(const { label, hint } of pieces) {
 				const title = first
 					? `${prefix()}${label}`
@@ -169,7 +191,7 @@ export function activate(ctx: vscode.ExtensionContext) {
 		if(lensProv) {
 			return;
 		}
-		if (placement() === 'above') {
+		if (placement() === 'above' || placement() === 'auto') {
 			lensProv = new TypeLensCodeLensProvider();
 			ctx.subscriptions.push(
 				lensProvDisposer = vscode.languages.registerCodeLensProvider({ scheme: '*' }, lensProv)
@@ -192,6 +214,12 @@ export function activate(ctx: vscode.ExtensionContext) {
 	});
 
     const refresh = () => {
+		if(placement() === 'auto') {
+			vscode.window.visibleTextEditors.forEach(refreshEol);
+			setupLensProvider();
+			return;
+		}
+
         if (placement() === 'eol') {
 			disposeLensProvider();
             vscode.window.visibleTextEditors.forEach(refreshEol);
@@ -205,9 +233,16 @@ export function activate(ctx: vscode.ExtensionContext) {
         vscode.commands.registerCommand('typeLens.refresh', refresh),
         vscode.window.onDidChangeVisibleTextEditors(refresh),
         vscode.window.onDidChangeTextEditorVisibleRanges(e => {
-			return placement() === 'eol' && refreshEol(e.textEditor);
+			return (placement() === 'eol' || placement() === 'auto') && refreshEol(e.textEditor);
 		}),
         vscode.workspace.onDidChangeTextDocument(e => {
+			if(placement() === 'auto') {
+				const ed = vscode.window.visibleTextEditors.find(ed => ed.document === e.document);
+				if (ed) { refreshEol(ed); }
+				lensProv?.refresh();
+				return;
+			}
+
             if (placement() === 'eol') {
                 const ed = vscode.window.visibleTextEditors.find(ed => ed.document === e.document);
                 if (ed) { refreshEol(ed); }
@@ -232,7 +267,8 @@ async function refreshEol(editor: vscode.TextEditor) {
 
     const vis = editor.visibleRanges[0] ?? new vscode.Range(0, 0, 0, 0);
     const start = Math.max(0, vis.start.line - 30);
-    const end = Math.min(editor.document.lineCount, vis.end.line + 30);
+	const lastLine = Math.max(0, editor.document.lineCount - 1);
+    const end = Math.min(lastLine, vis.end.line + 30);
     const rng = new vscode.Range(start, 0, end, 0);
 
     const hints = await vscode.commands.executeCommand<vscode.InlayHint[]>(
@@ -252,11 +288,15 @@ async function refreshEol(editor: vscode.TextEditor) {
 		}
 
 		const labels = pieces.map(({ label }) => label);
+		const text = `${prefix()}${labels.join(sep())}`;
+		if (placement() === 'above' || (placement() === 'auto' && text.length > autoLimitForAbove())) {
+			continue;
+		}
         decos.push({
             range: new vscode.Range(endPos, endPos),
 			hoverMessage: hoverMessage.trim(),
             renderOptions: {
-                after: { contentText: ` ${prefix()}${labels.join(sep())}` }
+                after: { contentText: `${text}` }
             }
         });
     }

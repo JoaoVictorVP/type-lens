@@ -2,13 +2,13 @@
   "name": "type-lens",
   "displayName": "universal-type-lens",
   "description": "Turns inlay hints of extensions with support to them into line-lens (F# ionide style).",
-  "version": "0.0.5",
+  "version": "0.1.0",
   "author": {
     "name": "jv.n"
   },
   "publisher": "nipah",
   "repository": {
-    "url": "https://github.com/JoaoVictorVP/type-lens"
+    "url": "https://github.com/mii-nipah/type-lens"
   },
   "icon": "resources/icon.png",
   "engines": {
@@ -31,9 +31,14 @@
         "properties": {
           "typeLens.placement": {
             "type": "string",
-            "enum": ["eol", "above"],
+            "enum": ["eol", "above", "auto"],
             "default": "eol",
             "description": "Where to render hints: end-of-line (eol) or as CodeLens above the line."
+          },
+          "typeLens.autoLimitForAbove": {
+            "type": "number",
+            "default": 50,
+            "description": "Maximum number of characters for a single eol decoration to have before being turned into a code lens."
           }
         }
       },

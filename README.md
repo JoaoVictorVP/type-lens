@@ -58,6 +58,13 @@ It could not work if the extension you are using for your programming language d
 
 ## Release Notes
 
+### 0.1.0
+Adds a new mode: 'auto'
+  * Will configure the hint to be an eol when the sum of chars is less than `typeLens.autoLimitForAbove`.
+  * Will configure the hint to be a code lens when the sum of chars is higher than the above.
+  * It is line-specific, but it's neat when you don't care much about consistency and/or care more about the editor overflowing with more complex hints.
+Fixes a bug with C# LSP giving out-of-bounds error when querying for the full document (inclusive).
+
 ### 0.0.5
 Adds an icon.
 
